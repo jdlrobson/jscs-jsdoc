@@ -185,7 +185,7 @@ describe('lib/rules/validate-jsdoc/check-param-names', function() {
                         fixed: undefined
                     }
                 ]
-            }, {
+	            }, {
                 it: 'should report out of order and expected',
                 code: function () {
                     Cls.prototype = {
