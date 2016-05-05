@@ -52,6 +52,41 @@ describe('lib/rules/validate-jsdoc', function () {
                         // doesn't mean
                     }
                 }
+            }, {
+                it: 'should find docblock after a blank line',
+                rules: {enforceExistence: true},
+                code: function() {
+                    /**
+                     * Foo
+                     */
+
+                    function foo () {}
+                }
+            }, {
+                it: 'should not stick docblock with diff indent',
+                rules: {enforceExistence: true},
+                code: function() {
+                      /**
+                       * Foo
+                       */
+                    function foo () {}
+                },
+                errors: 1
+            }, {
+                it: 'should not stick docblock to IIFE #176',
+                rules: {enforceExistence: true},
+                code: function() {
+                    /**
+                     * Descriptive description of bar.
+                     *
+                     * @method bar
+                     * @param x
+                     */
+
+                    ( function ( $ ) {
+                        // dummy
+                    }( jQuery ) );
+                }
             }
             /* jshint ignore:end */
         ]);

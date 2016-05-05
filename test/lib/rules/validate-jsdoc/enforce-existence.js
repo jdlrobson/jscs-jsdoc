@@ -147,6 +147,63 @@ describe('lib/rules/validate-jsdoc/enforce-existence', function () {
 
     });
 
+    describe('with true and esnext', function() {
+        checker.rules({enforceExistence: true});
+
+        checker.cases([
+            /* jshint ignore:start */
+            {
+                it: 'should report jsdoc absence for default named function export (#159)',
+                code: 'export default function named (v) {};',
+                errors: 1,
+            }, {
+                it: 'should not report jsdoc absence for default named function export (#159)',
+                code: [
+                    '/** Foo bar */',
+                    'export default function named (v) {};',
+                ].join('\n'),
+                errors: 0,
+            }, {
+                it: 'should report jsdoc absence for named function export (#159)',
+                code: 'export function named (v) {};',
+                errors: 1,
+            }, {
+                it: 'should not report jsdoc absence for named function export (#159)',
+                code: [
+                    '/** Foo bar */',
+                    'export function named (v) {};',
+                ].join('\n'),
+            }, {
+                it: 'should report jsdoc absence for default arrow function export (#159)',
+                code: 'export default (v) => {};',
+                errors: 1,
+            }, {
+                it: 'should not report jsdoc absence for default arrow function export (#159)',
+                code: [
+                    '/** Foo bar */',
+                    'export default (v) => {};',
+                ].join('\n'),
+            },
+            /* jshint ignore:end */
+        ]);
+    });
+
+    describe('with allExcept arrows and esnext', function() {
+        checker.rules({enforceExistence: {allExcept: ['arrow']}});
+
+        checker.cases([
+            /* jshint ignore:start */
+            {
+                it: 'should not report arrows without jsdoc',
+                code: '() => {};',
+            }, {
+                it: 'should not report anonymous without jsdoc',
+                code: '(function() {})',
+            }
+            /* jshint ignore:end */
+        ]);
+    });
+
     describe('with exceptExports', function() {
         checker.rules({enforceExistence: 'exceptExports'});
 
@@ -158,6 +215,32 @@ describe('lib/rules/validate-jsdoc/enforce-existence', function () {
                     module.exports = function () {
                     };
                 }
+            }
+            /* jshint ignore:end */
+        ]);
+    });
+
+    describe('with exceptExports and esnext', function() {
+        checker.rules({enforceExistence: 'exceptExports'});
+
+        checker.cases([
+            /* jshint ignore:start */
+            {
+                it: 'should not report jsdoc absence for default named function export (#159)',
+                code: 'export default function named (v) {};',
+                errors: 0,
+            }, {
+                it: 'should not report jsdoc absence for named function export (#159)',
+                code: 'export function named (v) {};',
+                errors: 0,
+            }, {
+                it: 'should not report jsdoc absence for default anonymous function export (#159)',
+                code: 'export default function (v) {};',
+                errors: 0,
+            }, {
+                it: 'should not report jsdoc absence for default arrow function export (#159)',
+                code: 'export default (v) => {};',
+                errors: 0,
             }
             /* jshint ignore:end */
         ]);
@@ -218,4 +301,77 @@ describe('lib/rules/validate-jsdoc/enforce-existence', function () {
         ]);
     });
 
+    describe('with allExcept paramless-procedures', function() {
+        checker.rules({enforceExistence: {allExcept: ['paramless-procedures']}});
+
+        checker.cases([
+            /* jshint ignore:start */
+            {
+                it: 'should not report jsdocs absence for function expressions without parameters',
+                code: function () {
+                    var functionalExpression = function () {
+                    };
+                }
+            }, {
+                it: 'should not report jsdocs absence for function declarations without parameters',
+                code: function () {
+                    function func() {
+                    }
+                }
+            }, {
+                it: 'should not report jsdocs absence for function expressions with undefined returns',
+                code: function () {
+                    var functionalExpression = function () {
+                        return;
+                    };
+                    var functionalExpressionNoReturn = function () {
+                        /** @returns {number}*/
+                        var nestedHasReturn = function () {
+                            return 1;
+                        };
+                    };
+                }
+            }, {
+                it: 'should report jsdocs absence for function expressions with defined returns',
+                code: function () {
+                    var functionalExpression = function () {
+                        return false;
+                    };
+                    var functionalExpressionNoReturn = function () {
+                        var nestedHasReturn = function () {
+                            return 1;
+                        };
+                    };
+                },
+                errors: 2
+            }, {
+                it: 'should not report jsdocs absence for function declarations with undefined returns',
+                code: function () {
+                    function func() {
+                        return;
+                    }
+                    function noReturn() {
+                        /** @returns {number}*/
+                        function nestedHasReturn() {
+                            return 1;
+                        }
+                    }
+                }
+            }, {
+                it: 'should report jsdocs absence for function declarations with defined returns',
+                code: function () {
+                    function func() {
+                        return false;
+                    }
+                    function noReturn() {
+                        function nestedHasReturn() {
+                            return 1;
+                        }
+                    }
+                },
+                errors: 2
+            }
+            /* jshint ignore:end */
+        ]);
+    });
 });

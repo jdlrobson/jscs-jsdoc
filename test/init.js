@@ -3,6 +3,8 @@ var parse = require('comment-parser');
 var chai = require('chai');
 var expect = chai.expect;
 
+chai.use(require('chai-subset'));
+
 global.parse = parse;
 global.fnBody = fnBody;
 global.checker = rulesChecker;
@@ -68,9 +70,11 @@ function rulesChecker(opts) {
          *
          * @param {Object} rules
          */
-        rules: function(rules) {
+        rules: function(rules, opts) {
             beforeEach(function() {
-                checker.configure({jsDoc: rules});
+                opts = opts || {};
+                opts.jsDoc = rules;
+                checker.configure(opts);
             });
         },
 
@@ -92,7 +96,7 @@ function rulesChecker(opts) {
             items = items || [];
             items.forEach(function(test) {
 
-                (test.skip ? it.skip : it)(test.it, function() {
+                (test.only ? it.only : (test.skip ? it.skip : it))(test.it, function() {
                     if (test.rules) {
                         checker.configure({ jsDoc: test.rules });
                     }
@@ -101,21 +105,34 @@ function rulesChecker(opts) {
                     var checked = checker.checkString(body);
                     var errors = checked.getErrorList();
                     if (errors.length && errors[0].rule === 'parseError') {
-                        console.error(errors[0]);
                         throw new Error(errors[0].message);
                     }
 
                     if (!test.hasOwnProperty('errors') || (typeof test.errors === 'number')) {
                         expect(checked.getErrorCount())
-                            .to.eq(test.errors || 0);
+                            .to.eq(test.errors || 0, test.errors ?
+                                'Expect ' + test.errors + ' error(s)'
+                                : 'Unexpected error(s)');
                     } else if (Array.isArray(test.errors)) {
-                        expect(errors)
-                            .to.deep.equal(test.errors);
+                        expect(errors.length).to.equal(test.errors.length);
+                        test.errors.forEach(function(err, index) {
+                            for (var i in err) {
+                                if (err.hasOwnProperty(i)) {
+                                    expect(errors[index][i]).to.equal(err[i], 'Invalid ' + i);
+                                }
+                            }
+                        });
+
+                        //expect(errors)
+                        //    .to.containSubset(test.errors);
                     } else {
                         expect(checked.getErrorCount())
                             .to.not.eq(0);
-                        expect(errors[0])
-                            .to.deep.similar(test.errors);
+                        for (var i in test.errors) {
+                            if (test.errors.hasOwnProperty(i)) {
+                                expect(errors[0][i]).to.equal(test.errors[i], 'Invalid ' + i);
+                            }
+                        }
                     }
                 });
 

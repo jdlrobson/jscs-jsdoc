@@ -1,6 +1,6 @@
 describe('lib/rules/validate-jsdoc/check-redundant-params', function () {
     var checker = global.checker({
-        plugins: ['./lib/index']
+        plugins: ['.']
     });
 
     describe('not configured', function() {
@@ -143,7 +143,7 @@ describe('lib/rules/validate-jsdoc/check-redundant-params', function () {
                 },
                 errors: [{
                     column: 3, line: 3, filename: 'input', rule: 'jsDoc', fixed: undefined,
-                    message: 'Found redundant param "rest" statement'
+                    message: 'jsDoc: Found redundant param "rest" statement'
                 }]
             }, {
                 it: 'should not report optional params',

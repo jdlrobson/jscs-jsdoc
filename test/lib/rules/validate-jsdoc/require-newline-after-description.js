@@ -1,6 +1,6 @@
 describe('lib/rules/validate-jsdoc/require-newline-after-description', function () {
     var checker = global.checker({
-        additionalRules: ['lib/rules/validate-jsdoc.js']
+        plugins: ['.']
     });
 
     describe('not configured', function() {
@@ -54,7 +54,7 @@ describe('lib/rules/validate-jsdoc/require-newline-after-description', function 
                 },
                 errors: {
                     line: 2,
-                    column: 19
+                    column: 13
                 },
             }, {
                 it: 'should not report newline after description',
